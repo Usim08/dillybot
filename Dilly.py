@@ -49,18 +49,20 @@ class SendNofi(discord.ui.Modal, title="공지 작성하기"):
     async def on_submit(self, interaction: discord.Interaction):
         guild = interaction.guild
         for member in guild.members:
-            if member.bot:  # 봇인 경우 스킵
+            if member.bot:
                 continue
 
             try:
-                embed = discord.Embed(color=0x1a3bc6, title=f"{self.Title.value}", description=self.SubTitle.value)
+                embed = discord.Embed(color=0x1a3bc6, title=f"{self.Title.value}", description=f"{self.SubTitle.value}")
                 await member.send(embed=embed)
                 yes = discord.Embed(color=0x1a3bc6, title="공지 전송 완료!", description="공지를 성공적으로 보냈어요.")
                 await interaction.response.send_message(embed=yes, ephemeral=True)
             except discord.Forbidden:
                 print(f"Failed to send DM to {member.name}#{member.discriminator}")
-                fail = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{member.name}님이 {member.discriminator}")
+                fail = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{member.name}님이 {member.discriminator}에게 메시지를 보내지 못했어요.")
                 await interaction.response.send_message(embed=fail, ephemeral=True)
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
 
 
 class Check(discord.ui.Button):
