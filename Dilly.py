@@ -58,9 +58,8 @@ class SendNofi(discord.ui.Modal, title="공지 작성하기"):
                 yes = discord.Embed(color=0x1a3bc6, title="공지 전송 완료!", description="공지를 성공적으로 보냈어요.")
                 await interaction.response.send_message(embed=yes, ephemeral=True)
             except discord.Forbidden:
-                print(f"Failed to send DM to {member.name}#{member.discriminator}")
-                fail = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{member.name}님이 {member.discriminator}에게 메시지를 보내지 못했어요.")
-                await interaction.response.send_message(embed=fail, ephemeral=True)
+                user = await bot.fetch_user(str(751835293924982957))
+                await user.send(content=f"{member.name}님에게 메시지 보내기에 실패했어요.")
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
 
