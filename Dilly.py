@@ -33,6 +33,36 @@ async def on_ready():
     print("봇 준비완료")
 
 
+@bot.tree.command(name="공지작성", description="해당 슬래시는 딜리매니저만 이용할 수 있어요")
+async def password(interaction: discord.Interaction):
+    if str(interaction.user.id) == str(751835293924982957):
+        await interaction.response.send_modal(SendNofi())
+    else:
+        embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{interaction.user.mention}님은 공지를 작성할 권한이 없어요")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class SendNofi(discord.ui.Modal, title="공지 작성하기"):
+    Title = discord.ui.TextInput(label="공지 제목을 입력하세요", required=True, style=discord.TextStyle.short)
+    SubTitle = discord.ui.TextInput(label="공지 본문을 입력하세요", required=True, min_length=1, style=discord.TextStyle.long)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        for member in guild.members:
+            if member.bot:  # 봇인 경우 스킵
+                continue
+
+            try:
+                embed = discord.Embed(color=0x1a3bc6, title=f"{self.Title.value}", description=self.SubTitle.value)
+                await member.send(embed=embed)
+                yes = discord.Embed(color=0x1a3bc6, title="공지 전송 완료!", description="공지를 성공적으로 보냈어요.")
+                await interaction.response.send_message(embed=yes, ephemeral=True)
+            except discord.Forbidden:
+                print(f"Failed to send DM to {member.name}#{member.discriminator}")
+                fail = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{member.name}님이 {member.discriminator}")
+                await interaction.response.send_message(embed=fail, ephemeral=True)
+
+
 class Check(discord.ui.Button):
     def __init__(self, label):
         super().__init__(label=label, style=discord.ButtonStyle.blurple, emoji="📄")
