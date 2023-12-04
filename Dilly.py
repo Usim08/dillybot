@@ -351,5 +351,5 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
 
 
 
-as_token = os.environ["BOT_TOKEN"]
+as_token = os.environ['BOT_TOKEN']
 bot.run(as_token)
