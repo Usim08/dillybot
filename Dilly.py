@@ -1,4 +1,5 @@
 import discord
+import os
 from discord.interactions import Interaction
 import pymongo
 from discord.ext import commands
@@ -350,5 +351,5 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
 
 
 
-
-bot.run("MTE3OTc5MTkyMjgxNTA1NzkzMA.GAtWBM.9-oBGJ8olm2XLnO1uc_MJE9F-gpvPnsunFf6zI")
+as_token = os.environ["BOT_TOKEN"]
+bot.run(as_token)
