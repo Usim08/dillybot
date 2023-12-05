@@ -112,22 +112,15 @@ async def pay(interaction: discord.Interaction):
 
 
 class Cancel(discord.ui.Button):
-    def __init__(self, label):
+    def __init__(self, label, rblox):
         super().__init__(label=label, style=discord.ButtonStyle.red, emoji="💥")
+        self.rblox = rblox
 
     async def callback(self, interaction):
-        user_data = db.verify.find_one({"PlrName": self.RobloxID})
-        rblxId = user_data.get('PlrName') if user_data else None
-        didName = user_data.get("DiscordName") if user_data else None
-        print(didName)
 
-        if user_data:
-            # 문서가 삭제되었을 때 추가 동작 수행
-            await interaction.response.send_message(f"{rblxId}님의 인증이 취소되었어요.\n재인증을 시도하시려면, `/딜리계좌만들기` 명령어를 이용해주세요!", ephemeral=True)
-            db.verify.delete_one({"PlrName": rblxId})
-            Button.disabled = False
-        else:
-            await interaction.response.send_message("취소해드릴 인증요청이 없어요.\n문제가 지속적으로 반복된다면, 문의하기 채널을 이용해주세요.", ephemeral=True)
+        await interaction.response.send_message(f"{self.rblox}님의 인증이 취소되었어요.\n재인증을 시도하시려면, `/딜리계좌만들기` 명령어를 이용해주세요!", ephemeral=True)
+        db.verify.delete_one({"PlrName": self.rblox})
+        Button.disabled = False
 
 class ChangeNewName(discord.ui.Button):
     def __init__(self, label):
@@ -141,43 +134,37 @@ async def pay(interaction: discord.Interaction, 로블록스닉네임: str):
     # MongoDB에서 이름으로 검색
     existing_data = db.verify.find_one({"PlrName": 로블록스닉네임})
     user_data = db.PayNumber.find_one({"PlayerName": 로블록스닉네임})
-    DcoName = existing_data.get("DiscordName") if existing_data else None
-    DicodName = db.PayNumber.find_one({"discordId": str(interaction.user.id)})
     UserId = interaction.user.id
 
-    if DicodName :
+    if user_data :
         embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{interaction.user.mention}님의 계정으로 개설된 계좌가 이미 존재합니다.\n계좌번호를 조회하시려면 `/내계좌번호확인하기` 명령어를 이용해주세요!")
         await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
-        if user_data:
-            embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{로블록스닉네임}(으)로 만들어진 계좌가 이미 존재합니다.\n계좌번호를 조회하시려면 `/내계좌번호확인하기` 명령어를 이용해주세요!")
+        if existing_data:
+            DcoName = existing_data.get("DiscordName") if existing_data else None
+            # 이미 데이터가 존재할 경우 실패 메시지 전송
+            embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{로블록스닉네임}님의 인증은 {DcoName}의 계정의 요청으로 이미 진행중입니다")
+            button = Cancel("인증 취소하기", 로블록스닉네임)
             view = discord.ui.View()
+            view.add_item(button)
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         else:
-            if existing_data:
-                # 이미 데이터가 존재할 경우 실패 메시지 전송
-                embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{로블록스닉네임}님의 인증은 {DcoName}의 계정의 요청으로 이미 진행중입니다")
-                button = Cancel("인증 취소하기", 로블록스닉네임)
-                view = discord.ui.View()
-                view.add_item(button)
-                await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-            else:
-                # 데이터가 없을 경우 계좌 개설
-                data = db.verify.insert_one(
-                    {
-                        "PlrName": 로블록스닉네임,
-                        "DiscordId" : str(interaction.user.id),
-                        "DiscordName": interaction.user.name
-                    }
-                )
-                embed = discord.Embed(color=0x1a3bc6, title="딜리 인증 시작하기", description=f"{로블록스닉네임}님의 계좌 개설을 위해 아래 버튼을 클릭하여\n인증을 진행해주세요!")
+            # 데이터가 없을 경우 계좌 개설
+            data = db.verify.insert_one(
+                {
+                    "PlrName": 로블록스닉네임,
+                    "DiscordId" : str(interaction.user.id),
+                    "DiscordName": interaction.user.name
+                }
+            )
+            embed = discord.Embed(color=0x1a3bc6, title="딜리 인증 시작하기", description=f"{로블록스닉네임}님의 계좌 개설을 위해 아래 버튼을 클릭하여\n인증을 진행해주세요!")
 
-                button = discord.ui.Button(label="인증하러 가기", style=discord.ButtonStyle.blurple, emoji="✅", url="https://www.roblox.com/games/15503722646/Dilly")
-                view = discord.ui.View()
-                view.add_item(button)
+            button = discord.ui.Button(label="인증하러 가기", style=discord.ButtonStyle.blurple, emoji="✅", url="https://www.roblox.com/games/15503722646/Dilly")
+            view = discord.ui.View()
+            view.add_item(button)
 
-                await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+            
 @bot.tree.command(name="비밀번호찾기", description="비밀번호를 분실하셨나요? 딜리가 찾아드릴게요")
 async def password(interaction: discord.Interaction):
     await interaction.response.send_modal(PasswordReset())
