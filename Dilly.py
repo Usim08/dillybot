@@ -33,13 +33,64 @@ async def on_ready():
     print("봇 준비완료")
 
 
-@bot.tree.command(name="공지작성", description="해당 슬래시는 딜리매니저만 이용할 수 있어요")
+@bot.tree.command(name="어드민투딜리", description="해당 슬래시는 딜리매니저만 이용할 수 있어요")
 async def password(interaction: discord.Interaction):
     if str(interaction.user.id) == str(751835293924982957):
-        await interaction.response.send_modal(SendNofi())
+        viewww = SelectAdmin()
+        await interaction.response.send_message("선택사항을 선택하세요", view=viewww, ephemeral=True)
     else:
         embed = discord.Embed(colour=discord.Colour.red(), title="오류가 발생했어요", description=f"{interaction.user.mention}님은 공지를 작성할 권한이 없어요")
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+class SelectAdmin(View):
+    @discord.ui.select(
+        placeholder="선택사항 선택",
+        options=[
+            discord.SelectOption(
+                label="딜리 인증",
+                value='1',
+                description="딜리의 서비스 시작을 위해 사용자를 인증합니다",
+                emoji="✅"
+            ),
+            discord.SelectOption(
+                label="공지하기",
+                value='2',
+                description="사용자들에게 다이렉트 메세지로 공지를 전송합니다",
+                emoji="📣"
+            )
+        ]
+    )
+
+    async def select_callback(self, interaction, select):
+        select.disabled = True
+        
+        if select.values[0] == '1':
+            await interaction.response.send_modal(Verify())
+        if select.values[0] == '2':
+            await interaction.response.send_modal(SendNofi())
+
+
+class Verify(discord.ui.Modal, title="인증하기"):
+    UserName = discord.ui.TextInput(label="유저의 아이디를 입력하세요", required=True, style=discord.TextStyle.short)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        role = 1180037443681005640
+        guild = interaction.guild
+        member = guild.get_member(int(self.UserName.value))
+        getRole = discord.utils.get(member.guild.roles, id=role)
+        await member.add_roles(getRole)
+        
+        try:
+            embed = discord.Embed(color=0x1a3bc6, title=f"인증이 완료됐어요!", description=f"{interaction.user.mention}님! 딜리의 인증에 수락되신 것을 축하드려요.\n지금 바로 딜리를 이용하시려면 https://discord.com/channels/1149314842327523349/1180858060269436978 로 이동해주세요!")
+            await member.send(embed=embed)
+            yes = discord.Embed(color=0x1a3bc6, title="인증 완료!", description="인증을 완료했어요!")
+            await interaction.response.edit_message(content="인증 완료!",embed=yes, view=None)
+        except discord.Forbidden:
+            user = await bot.fetch_user(str(751835293924982957))
+            await user.send(content=f"{member.name}님에게 메시지 보내기에 실패했어요.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
 
 
 class SendNofi(discord.ui.Modal, title="공지 작성하기"):
@@ -56,12 +107,13 @@ class SendNofi(discord.ui.Modal, title="공지 작성하기"):
                 embed = discord.Embed(color=0x1a3bc6, title=f"{self.Title.value}", description=f"{self.SubTitle.value}")
                 await member.send(embed=embed)
                 yes = discord.Embed(color=0x1a3bc6, title="공지 전송 완료!", description="공지를 성공적으로 보냈어요.")
-                await interaction.response.send_message(embed=yes, ephemeral=True)
+                await interaction.response.edit_message(embed=yes, view=None)
             except discord.Forbidden:
                 user = await bot.fetch_user(str(751835293924982957))
                 await user.send(content=f"{member.name}님에게 메시지 보내기에 실패했어요.")
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
+
 
 
 class Check(discord.ui.Button):
