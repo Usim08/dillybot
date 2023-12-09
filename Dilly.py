@@ -71,14 +71,16 @@ class SelectAdmin(View):
 
 
 class Verify(discord.ui.Modal, title="인증하기"):
-    UserName = discord.ui.TextInput(label="유저의 아이디를 입력하세요", required=True, style=discord.TextStyle.short)
+    UserId = discord.ui.TextInput(label="유저의 아이디를 입력하세요", required=True, style=discord.TextStyle.short)
+    UserName = discord.ui.TextInput(label="유저의 닉네임을 입력하세요", required=True, style=discord.TextStyle.short)
 
     async def on_submit(self, interaction: discord.Interaction):
-        role = 1180037443681005640
+        role = 1149314842327523354
         guild = interaction.guild
-        member = guild.get_member(int(self.UserName.value))
+        member = guild.get_member(int(self.UserId.value))
         getRole = discord.utils.get(member.guild.roles, id=role)
         await member.add_roles(getRole)
+        await member.edit(nick=f"US | {self.UserName.value}")
         
         try:
             embed = discord.Embed(color=0x1a3bc6, title=f"인증이 완료됐어요!", description=f"{interaction.user.mention}님! 딜리의 인증에 수락되신 것을 축하드려요.\n지금 바로 딜리를 이용하시려면 https://discord.com/channels/1149314842327523349/1180858060269436978 로 이동해주세요!")
