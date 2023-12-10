@@ -75,7 +75,7 @@ class Verify(discord.ui.Modal, title="인증하기"):
     UserName = discord.ui.TextInput(label="유저의 닉네임을 입력하세요", required=True, style=discord.TextStyle.short)
 
     async def on_submit(self, interaction: discord.Interaction):
-        role = 1180037443681005640
+        role = 1149314842327523354
         guild = interaction.guild
         member = guild.get_member(int(self.UserId.value))
         getRole = discord.utils.get(member.guild.roles, id=role)
