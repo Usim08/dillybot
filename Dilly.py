@@ -75,7 +75,7 @@ class Verify(discord.ui.Modal, title="인증하기"):
     UserName = discord.ui.TextInput(label="유저의 닉네임을 입력하세요", required=True, style=discord.TextStyle.short)
 
     async def on_submit(self, interaction: discord.Interaction):
-        role = 1149314842327523354
+        role = 1180037443681005640
         guild = interaction.guild
         member = guild.get_member(int(self.UserId.value))
         getRole = discord.utils.get(member.guild.roles, id=role)
@@ -83,8 +83,11 @@ class Verify(discord.ui.Modal, title="인증하기"):
         await member.edit(nick=f"US | {self.UserName.value}")
         
         try:
-            embed = discord.Embed(color=0x1a3bc6, title=f"인증이 완료됐어요!", description=f"{interaction.user.mention}님! 딜리의 인증에 수락되신 것을 축하드려요.\n지금 바로 딜리를 이용하시려면 https://discord.com/channels/1149314842327523349/1180858060269436978 로 이동해주세요!")
-            await member.send(embed=embed)
+            embed = discord.Embed(color=0x1a3bc6, title=f"<:dilly:1183243842279985194> 인증이 수락되었어요", description=f"축하합니다! 🎉\n{self.UserName.value}님이 요청하신 인증이 수락되었어요.")
+            button = Clickbutton("딜리 이용 시작하기")
+            view = discord.ui.View()
+            view.add_item(button)
+            await member.send(embed=embed, view=view)
             yes = discord.Embed(color=0x1a3bc6, title="인증 완료!", description="인증을 완료했어요!")
             await interaction.response.edit_message(content="인증 완료!",embed=yes, view=None)
         except discord.Forbidden:
@@ -92,6 +95,10 @@ class Verify(discord.ui.Modal, title="인증하기"):
             await user.send(content=f"{member.name}님에게 메시지 보내기에 실패했어요.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+class Clickbutton(discord.ui.Button):
+    def __init__(self, label):
+        super().__init__(label=label, style=discord.ButtonStyle.blurple, emoji="✨", url="https://discord.com/channels/1149314842327523349/1180858060269436978")
 
 
 
@@ -106,7 +113,7 @@ class SendNofi(discord.ui.Modal, title="공지 작성하기"):
                 continue
 
             try:
-                embed = discord.Embed(color=0x1a3bc6, title=f"{self.Title.value}", description=f"{self.SubTitle.value}")
+                embed = discord.Embed(color=0x1a3bc6, title=f"<:dilly:1183243842279985194> {self.Title.value}", description=f"{self.SubTitle.value}")
                 await member.send(embed=embed)
                 yes = discord.Embed(color=0x1a3bc6, title="공지 전송 완료!", description="공지를 성공적으로 보냈어요.")
                 await interaction.response.edit_message(embed=yes, view=None)
