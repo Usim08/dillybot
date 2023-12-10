@@ -57,6 +57,12 @@ class SelectAdmin(View):
                 value='2',
                 description="사용자들에게 다이렉트 메세지로 공지를 전송합니다",
                 emoji="📣"
+            ),
+            discord.SelectOption(
+                label="계좌확인",
+                value='3',
+                description="사용자의 계좌를 조회합니다",
+                emoji="🔍"
             )
         ]
     )
@@ -68,6 +74,8 @@ class SelectAdmin(View):
             await interaction.response.send_modal(Verify())
         if select.values[0] == '2':
             await interaction.response.send_modal(SendNofi())
+        if select.values[0] == '3':
+            await interaction.response.send_modal(CheckInfo())
 
 
 class Verify(discord.ui.Modal, title="인증하기"):
@@ -95,6 +103,30 @@ class Verify(discord.ui.Modal, title="인증하기"):
             await user.send(content=f"{member.name}님에게 메시지 보내기에 실패했어요.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+
+class CheckInfo(discord.ui.Modal, title="사용자 정보 조회"):
+    UserId = discord.ui.TextInput(label="사용자의 디스코드 아이디를 입력하세요", required=True, style=discord.TextStyle.short)
+    async def on_submit(self, interaction: discord.Interaction):
+        user_data = db.PayNumber.find_one({"discordId": str(self.UserId.value)})
+
+        if user_data:
+            paynumberBar = user_data.get('PayNumberBar')
+            paynumber = user_data.get('PayNumber')
+            SetName = user_data.get('SetName')
+            UserMoney = user_data.get('Money')
+            robloxName = user_data.get('PlayerName')
+            Dcid = user_data.get('discordName')
+
+            embed = discord.Embed(color=0x1a3bc6, title=f"{SetName}님의 계좌정보")
+            embed.add_field(name="> 계좌번호 (-포함)", value=paynumberBar, inline=True)
+            embed.add_field(name="> 계좌번호 (-제외)", value=paynumber, inline=True)
+            embed.add_field(name="> 예금주 명", value=SetName, inline=True)
+            embed.add_field(name="> 계좌 잔액", value=f"{UserMoney}원", inline=True)
+            embed.add_field(name="> 로블록스", value=robloxName, inline=True)
+            embed.add_field(name="> 디스코드", value=f"<@{self.UserId.value}>", inline=True)
+            view = discord.ui.View()
+            await interaction.response.edit_message(embed=embed, view=None)
 
 class Clickbutton(discord.ui.Button):
     def __init__(self, label):
