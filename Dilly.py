@@ -430,6 +430,7 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
             return
 
         if To_User:
+            User_Number = Send_User.get("PayNumberBar")
             pay_Number = To_User.get("PayNumberBar")
             SetName = To_User.get("SetName")
             To_DiscordId = To_User.get("discordId")
@@ -442,37 +443,48 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
             Sd_PayNumber = Send_User.get("PayNumberBar")
             Sd_Money_Money = int(Sd_Money) - int(money)
             To_Money_Money = int(To_money) + int(money)
-            if int(self.howMoney.value) > 0 :
-                if int(Sd_Money) >= int(money):
-                        db.PayNumber.update_one(
-                            {"discordId": str(interaction.user.id)},
-                            {"$set": {"Money": Sd_Money_Money}}
-                        )
 
-                        db.PayNumber.update_one(
-                            {"PayNumberBar": self.payNumber.value},
-                            {"$set": {"Money": To_Money_Money}}
-                        )
+            if pay_Number != User_Number:
+                if int(self.howMoney.value) > 0 :
+                    if int(Sd_Money) >= int(money):
+                            db.PayNumber.update_one(
+                                {"discordId": str(interaction.user.id)},
+                                {"$set": {"Money": Sd_Money_Money}}
+                            )
 
-                        embed = discord.Embed(color=0x1a3bc6, title=f"{SetName}님에게 {money}원 송금완료!")
-                        embed.add_field(name="보내시는 분", value=Sd_Name, inline=True)
-                        embed.add_field(name="받는 분", value=SetName, inline=True)
-                        embed.add_field(name="보낸 금액", value=f"{money}원", inline=True)
+                            db.PayNumber.update_one(
+                                {"PayNumberBar": self.payNumber.value},
+                                {"$set": {"Money": To_Money_Money}}
+                            )
 
-                        toEmbed = discord.Embed(color=0x1a3bc6, title=f"{Sd_Name}님이 내 계좌로 {money}원을 보냈어요", description=f"남은 잔액 : {To_Money_Money}")
-                        SdEmbed = discord.Embed(color=0x1a3bc6, title=f"{SetName}님에게 {money}원을 보냈어요", description=f"남은 잔액 : {Sd_Money_Money}")
+                            embed = discord.Embed(color=0x1a3bc6, title=f"{SetName}님에게 {money}원 송금완료!")
+                            embed.add_field(name="보내시는 분", value=Sd_Name, inline=True)
+                            embed.add_field(name="받는 분", value=SetName, inline=True)
+                            embed.add_field(name="보낸 금액", value=f"{money}원", inline=True)
 
-                        user = await bot.fetch_user(To_DiscordId)
-                        Sduser = await bot.fetch_user(Sd_DiscordId)
-                        await user.send(embed=toEmbed)
-                        await Sduser.send(embed=SdEmbed)
+                            toEmbed = discord.Embed(color=0x1a3bc6, title=f"{Sd_Name}님이 내 계좌로 {money}원을 보냈어요", description=f"남은 잔액 : {To_Money_Money}")
+                            SdEmbed = discord.Embed(color=0x1a3bc6, title=f"{SetName}님에게 {money}원을 보냈어요", description=f"남은 잔액 : {Sd_Money_Money}")
+
+                            user = await bot.fetch_user(To_DiscordId)
+                            Sduser = await bot.fetch_user(Sd_DiscordId)
+                            await user.send(embed=toEmbed)
+                            await Sduser.send(embed=SdEmbed)
+                            await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+                    else:
+                        embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="계좌의 잔액이 부족해요.")
                         await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
                 else:
-                    embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="계좌의 잔액이 부족해요.")
+                    embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="올바른 값을 입력해주세요.")
                     await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
             else:
-                embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="올바른 값을 입력해주세요.")
+                embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="자신에겐 돈을 보낼 수 없습니다.")
                 await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+
+# ...
+
+        else:
+            embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="존재하지 않는 계좌번호 입니다.\n송금하시려는 계좌번호를 다시한번 확인해주세요")
+            await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
 
 
 
