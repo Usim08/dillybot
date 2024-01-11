@@ -413,10 +413,21 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
     payNumber = discord.ui.TextInput(label="어떤 계좌로 돈을 보낼까요?", placeholder="계좌번호 입력 (-포함)", required=True, min_length=15, max_length=15, style=discord.TextStyle.short)
     howMoney = discord.ui.TextInput(label="얼마를 보낼까요?", placeholder="숫자 입력", required=True, min_length=1, style=discord.TextStyle.short)
 
-
     async def on_submit(self, interaction: discord.Interaction):
         Send_User = db.PayNumber.find_one({"discordId": str(interaction.user.id)})
         To_User = db.PayNumber.find_one({"PayNumberBar": self.payNumber.value})
+
+        def is_number(value):
+            try:
+                float(value)
+                return True
+            except ValueError:
+                return False
+
+        if not is_number(self.howMoney.value):
+            embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="금액은 숫자로만 입력해주세요.")
+            await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+            return
 
         if To_User:
             pay_Number = To_User.get("PayNumberBar")
@@ -429,8 +440,8 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
             Sd_Name = Send_User.get("SetName")
             Sd_DiscordId = Send_User.get("discordId")
             Sd_PayNumber = Send_User.get("PayNumberBar")
-            Sd_Money_Money = int(Sd_Money)-int(money)
-            To_Money_Money = int(To_money)+int(money)
+            Sd_Money_Money = int(Sd_Money) - int(money)
+            To_Money_Money = int(To_money) + int(money)
 
             # Check if the current password matches before updating
             if int(Sd_Money) >= int(money):
@@ -463,6 +474,7 @@ class alreadySend(discord.ui.Modal, title="딜리계좌로 송금하기"):
         else:
             embed = discord.Embed(color=0x1a3bc6, title="오류가 발생했어요", description="존재하지 않는 계좌번호 입니다.\n송금하시려는 계좌번호를 다시한번 확인해주세요")
             await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+
 
 
 
