@@ -189,7 +189,7 @@ async def pay(interaction: discord.Interaction):
     
     if user_data:
         dcId = user_data.get("discordId")
-        if dcId == interaction.user.id:
+        if dcId == str(interaction.user.id):
             # 사용자 데이터에서 PayNumberBar 필드의 값을 가져옴
             pay_number = user_data.get('PayNumberBar', '계좌번호가 없습니다.')
             # 사용자에게 디렉트 메시지 보내기
