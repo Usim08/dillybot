@@ -389,7 +389,6 @@ class NewPassword(discord.ui.Modal, title="딜리계좌 비밀번호 변경하�
             embed = discord.Embed(color=0x1a3bc6, title="비밀번호가 변경되었습니다", description=f"{NickName}님의 딜리계좌 비밀번호가 정상적으로 변경되었습니다")
             embed.add_field(name="예금주", value=f"{SetName}", inline=True)
             embed.add_field(name="계좌번호", value=f"{pay_Number}", inline=True)
-            embed.add_field(name="비밀번호", value=f"{self.newpas.value}", inline=True)
             embed.add_field(name="예금주 닉네임", value=f"{NickName}", inline=True)
             
             await interaction.response.edit_message(embed=embed, view=None)
